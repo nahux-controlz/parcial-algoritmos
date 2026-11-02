@@ -280,59 +280,88 @@ class BinaryTree():
 
     # metodos agregados para el ejercicio 1 del parcial (pokemons)
 
-    def proxy_search_show_all(self, prefix: str) -> None:
+    # estos metodos devuelven listas para que el ejercicio las muestre ordenadas
 
-        def __proxy_search_show_all(root, prefix):
+    def proxy_search_values(self, prefix: str) -> list:
+
+        def __proxy_search_values(root, prefix, result):
             if root.left is not None:
-                __proxy_search_show_all(root.left, prefix)
+                __proxy_search_values(root.left, prefix, result)
             if prefix in root.value.lower():
-                print(root.other_values)
+                result.append(root.other_values)
             if root.right is not None:
-                __proxy_search_show_all(root.right, prefix)
+                __proxy_search_values(root.right, prefix, result)
 
+        result = []
         if self.root is not None:
-            __proxy_search_show_all(self.root, prefix.lower())
+            __proxy_search_values(self.root, prefix.lower(), result)
+        return result
 
-    def show_names_by_value(self, value: Any) -> None:
+    def names_by_value(self, value: Any) -> list:
         # como el arbol tiene valores repetidos (un nodo por cada pokemon de
         # ese tipo) cuando se encuentra el valor se sigue buscando en ambos lados
-        def __show_names_by_value(root, value):
+        def __names_by_value(root, value, result):
             if root is not None:
                 if value < root.value:
-                    __show_names_by_value(root.left, value)
+                    __names_by_value(root.left, value, result)
                 elif value > root.value:
-                    __show_names_by_value(root.right, value)
+                    __names_by_value(root.right, value, result)
                 else:
-                    __show_names_by_value(root.left, value)
-                    print(root.other_values.name)
-                    __show_names_by_value(root.right, value)
+                    __names_by_value(root.left, value, result)
+                    result.append(root.other_values.name)
+                    __names_by_value(root.right, value, result)
 
-        __show_names_by_value(self.root, value)
+        result = []
+        __names_by_value(self.root, value, result)
+        result.sort()
+        return result
 
-    def inorden_number_name(self) -> None:
+    def inorden_values(self) -> list:
 
-        def __inorden_number_name(root):
+        def __inorden_values(root, result):
             if root.left is not None:
-                __inorden_number_name(root.left)
-            print(f'{root.other_values.number} - {root.other_values.name}')
+                __inorden_values(root.left, result)
+            result.append(root.other_values)
             if root.right is not None:
-                __inorden_number_name(root.right)
+                __inorden_values(root.right, result)
+
+        result = []
+        if self.root is not None:
+            __inorden_values(self.root, result)
+        return result
+
+    def by_level_grouped(self) -> list:
+        # igual que by_level pero agrupa los valores de cada nivel
+        levels = []
+        pendings = Queue()
 
         if self.root is not None:
-            __inorden_number_name(self.root)
+            pendings.arrive([self.root, 0])
+            while pendings.size() > 0:
+                node, level = pendings.attention()
+                if level == len(levels):
+                    levels.append([])
+                levels[level].append(node.value)
+                if node.left is not None:
+                    pendings.arrive([node.left, level + 1])
+                if node.right is not None:
+                    pendings.arrive([node.right, level + 1])
+        return levels
 
-    def inorden_weak_against(self, types: list) -> None:
+    def weak_against(self, types: list) -> list:
 
-        def __inorden_weak_against(root, types):
+        def __weak_against(root, types, result):
             if root.left is not None:
-                __inorden_weak_against(root.left, types)
+                __weak_against(root.left, types, result)
             if any(type_ in root.other_values.weaknesses for type_ in types):
-                print(root.value)
+                result.append(root.value)
             if root.right is not None:
-                __inorden_weak_against(root.right, types)
+                __weak_against(root.right, types, result)
 
+        result = []
         if self.root is not None:
-            __inorden_weak_against(self.root, types)
+            __weak_against(self.root, types, result)
+        return result
 
     def count_by_value(self) -> dict:
 

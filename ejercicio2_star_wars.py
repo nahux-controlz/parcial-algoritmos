@@ -3,19 +3,23 @@ from star_wars_data import personajes
 
 
 def show_title(title):
-    print('=' * 60)
+    print()
     print(title)
-    print('=' * 60)
+    print('-' * len(title))
 
 
-def show_min_tree(graph, origin):
-    min_tree = graph.kruskal(origin)
-    print(f'Kruskal (Árbol de expansión mínimo) desde {origin}:')
-    print(min_tree)
+def show_min_tree(min_tree):
+    peso_total = 0
+    print(f'  {"Personaje":<20}{"Personaje":<20}Episodios juntos')
+    for edge in min_tree.split(';'):
+        origin, destination, weight = edge.split('/')
+        print(f'  {origin:<20}{destination:<20}{weight:>9}')
+        peso_total += int(weight)
+    print(f'  Peso total del árbol: {peso_total}')
 
 
 def show_shortest_path(graph, origin, destination):
-    print(f'De {origin} a {destination}')
+    title = f'{origin} a {destination}:'
     if graph.exist_path(origin, destination):
         paths = graph.dijkstra(origin)
         peso_total = None
@@ -29,10 +33,9 @@ def show_shortest_path(graph, origin, destination):
                 camino_completo.append(value[0])
                 destination = value[2]
         camino_completo.reverse()
-        print(f'-> Camino: {" - ".join(camino_completo)}')
-        print(f'-> Distancia (episodios compartidos): {peso_total}')
+        print(f'  {title:<22}{" -> ".join(camino_completo)}  (costo: {peso_total} episodios)')
     else:
-        print(f'-> No existe camino entre {origin} y {destination}')
+        print(f'  {title:<22}no existe camino')
 
 
 g = Graph(is_dir=False)
@@ -50,38 +53,44 @@ for i in range(len(personajes)):
         if episodios_juntos > 0:
             g.add_edge(episodios_juntos, personajes[i]['nombre'], personajes[j]['nombre'])
 
-#B
-show_title('1. ÁRBOL DE EXPANSIÓN MÍNIMO DESDE C-3PO, YODA Y LEIA')
-for origin in ['C-3PO', 'Yoda', 'Leia']:
-    show_min_tree(g, origin)
-    print()
+print('EJERCICIO 2 - GRAFO DE PERSONAJES DE STAR WARS')
+print(f'Personajes cargados: {len(g)}')
 
-#C
+show_title('Árbol de expansión mínimo (Kruskal) desde C-3PO, Yoda y Leia')
+origenes = ['C-3PO', 'Yoda', 'Leia']
+arboles = []
+for origen in origenes:
+    arboles.append(g.kruskal(origen))
+
+if arboles[0] == arboles[1] == arboles[2]:
+    print('Desde los tres vértices se obtiene el mismo árbol, porque todos los personajes están conectados.')
+    print()
+    show_min_tree(arboles[0])
+else:
+    for i in range(len(origenes)):
+        print()
+        print(f'Desde {origenes[i]}:')
+        show_min_tree(arboles[i])
+
 maximo = 0
 for vertex in g:
     for edge in vertex.edges:
         if edge.weight > maximo:
             maximo = edge.weight
 
-show_title('2. NÚMERO MÁXIMO DE EPISODIOS COMPARTIDOS Y PARES')
-print(f'El máximo de episodios compartidos es: {maximo}')
-print('Personajes que comparten esa cantidad:')
+show_title('Máximo de episodios compartidos')
+print(f'El máximo es {maximo} episodios y lo comparten:')
 for vertex in g:
     for edge in vertex.edges:
         # el grafo es no dirigido, cada par se muestra una sola vez
         if edge.weight == maximo and vertex.value < edge.destination:
-            print(f'* {vertex.value} y {edge.destination}')
-print()
+            print(f'  {vertex.value} y {edge.destination}')
 
-#E
-show_title('3. CAMINO MÁS CORTO (Dijkstra)')
+show_title('Camino más corto (Dijkstra)')
 show_shortest_path(g, 'C-3PO', 'R2-D2')
-print()
 show_shortest_path(g, 'Yoda', 'Darth Vader')
-print()
 
-#F
-show_title('4. PERSONAJES QUE APARECIERON EN LOS 9 EPISODIOS')
+show_title('Personajes que aparecieron en los nueve episodios')
 for vertex in g:
     if len(vertex.other_values) == 9:
-        print(f'* {vertex.value}')
+        print(f'  {vertex.value}')
