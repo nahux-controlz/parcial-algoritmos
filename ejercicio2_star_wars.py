@@ -47,8 +47,6 @@ for i in range(len(personajes)):
         if episodios_juntos > 0:
             g.add_edge(episodios_juntos, personajes[i]['nombre'], personajes[j]['nombre'])
 
-g.show()
-
 #B
 for origin in ['C-3PO', 'Yoda', 'Leia']:
     print()
